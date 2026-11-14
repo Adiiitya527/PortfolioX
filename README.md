@@ -2,7 +2,7 @@
 
 A native Android app for tracking a simulated stock portfolio: a watchlist, live prices, historical charts, buy/sell trades, holdings and transaction history.
 
-> Status: **Phase 0 – project setup**. Features are added phase by phase (see the roadmap below).
+> Status: **Phase 1 – domain models and sample market data**. Features are added phase by phase (see the roadmap below).
 
 ## Tech stack
 
@@ -46,7 +46,7 @@ Packages are created as the phases that need them are implemented.
 ## Roadmap
 
 - [x] Phase 0 – Project setup, theme, Git
-- [ ] Phase 1 – Domain models, sample market data, business logic and tests
+- [x] Phase 1 – Domain models, sample market data, business logic and tests
 - [ ] Phase 2 – Room persistence and repositories
 - [ ] Phase 3 – App shell: navigation and shared UI state
 - [ ] Phase 4 – Watchlist and search
