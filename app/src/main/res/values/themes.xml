@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        XML theme for the window only (what shows for a split second before Compose draws).
+        All real styling lives in Compose: ui/theme/Theme.kt.
+    -->
+    <style name="Theme.PortfolioX" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>
