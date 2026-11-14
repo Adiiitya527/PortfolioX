@@ -102,7 +102,21 @@
         <item quantity="other">%1$d shares · avg %2$s</item>
     </plurals>
 
-    <!-- Placeholders until their phases -->
-    <string name="placeholder_title">Coming soon</string>
-    <string name="history_placeholder">Transaction history arrives in Phase 8.</string>
+    <!-- History -->
+    <string name="history_empty_title">No trades yet</string>
+    <string name="history_empty_message">Every buy and sell you make will appear here, grouped by day.</string>
+    <string name="history_realized_pnl">Realized P&amp;L</string>
+    <plurals name="history_trade_count">
+        <item quantity="one">%d trade</item>
+        <item quantity="other">%d trades</item>
+    </plurals>
+    <string name="history_filter_all">All</string>
+    <string name="history_filter_buys">Buys</string>
+    <string name="history_filter_sells">Sells</string>
+    <string name="history_today">Today</string>
+    <string name="history_yesterday">Yesterday</string>
+    <string name="history_quantity_price_time">%1$d × %2$s · %3$s</string>
+    <string name="history_realized_short">P&amp;L %1$s</string>
+    <string name="history_no_buys">No buys yet.</string>
+    <string name="history_no_sells">No sells yet. Selling shares locks in a profit or loss.</string>
 </resources>
