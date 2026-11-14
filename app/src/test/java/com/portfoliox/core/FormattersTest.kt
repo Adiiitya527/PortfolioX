@@ -41,5 +41,6 @@ class FormattersTest {
         val instant = Instant.parse("2026-11-14T10:00:00Z")
 
         assertEquals("14 Nov 2026, 15:30", Formatters.dateTime(instant, ZoneOffset.ofHoursMinutes(5, 30)))
+        assertEquals("14 Nov 2026", Formatters.date(instant, ZoneOffset.UTC))
     }
 }

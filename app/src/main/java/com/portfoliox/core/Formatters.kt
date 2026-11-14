@@ -48,9 +48,15 @@ object Formatters {
     private val dateTimeFormatter: DateTimeFormatter =
         DateTimeFormatter.ofPattern("d MMM yyyy, HH:mm", Locale.US)
 
+    private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.US)
+
     /** Formats an instant in the device's time zone: "14 Nov 2026, 15:30". */
     fun dateTime(instant: Instant, zone: ZoneId = ZoneId.systemDefault()): String =
         dateTimeFormatter.format(instant.atZone(zone))
+
+    /** Date only: "14 Nov 2026". */
+    fun date(instant: Instant, zone: ZoneId = ZoneId.systemDefault()): String =
+        dateFormatter.format(instant.atZone(zone))
 
     // String.format with %,.2f handles BigDecimal exactly (no conversion to Double).
     private fun grouped(value: BigDecimal): String =
