@@ -27,6 +27,8 @@ class FakePortfolioRepository : PortfolioRepository {
 
     /** What executeTrade returns. Tests set it before triggering a trade. */
     var nextTradeResult: TradeResult? = null
+    /** When set, executeTrade throws this instead. */
+    var tradeFailure: Throwable? = null
     val executedOrders = mutableListOf<TradeOrder>()
 
     override fun observeCash(): Flow<BigDecimal> = failable(cash)
@@ -37,6 +39,7 @@ class FakePortfolioRepository : PortfolioRepository {
 
     override suspend fun executeTrade(order: TradeOrder): TradeResult {
         executedOrders += order
+        tradeFailure?.let { throw it }
         return checkNotNull(nextTradeResult) { "Set nextTradeResult before executing a trade" }
     }
 

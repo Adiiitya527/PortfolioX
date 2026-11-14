@@ -8,30 +8,40 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -47,6 +57,7 @@ import com.portfoliox.domain.model.HoldingValuation
 import com.portfoliox.domain.model.PricePoint
 import com.portfoliox.domain.model.Quote
 import com.portfoliox.domain.model.Stock
+import com.portfoliox.domain.model.TradeType
 import com.portfoliox.ui.common.ErrorView
 import com.portfoliox.ui.common.LoadingView
 import com.portfoliox.ui.common.PortfolioXTopBar
@@ -54,27 +65,76 @@ import com.portfoliox.ui.common.PriceChangeText
 import com.portfoliox.ui.common.UiState
 import com.portfoliox.ui.common.changeColor
 import com.portfoliox.ui.theme.PortfolioXTheme
+import com.portfoliox.ui.trade.TradeSheet
+import com.portfoliox.ui.trade.TradeViewModel
+import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.time.Instant
 
+/**
+ * Two ViewModels share this screen's back stack entry: StockDetailViewModel for the page and
+ * TradeViewModel for the trade sheet. Both are created by viewModel() with the same owner,
+ * so both survive rotation and are cleared when the user leaves the screen.
+ */
 @Composable
 fun StockDetailScreen(
     onBack: () -> Unit,
     viewModel: StockDetailViewModel = viewModel(factory = StockDetailViewModel.Factory),
+    tradeViewModel: TradeViewModel = viewModel(factory = TradeViewModel.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val chartState by viewModel.chartState.collectAsStateWithLifecycle()
+    val tradeState by tradeViewModel.uiState.collectAsStateWithLifecycle()
+
+    // rememberSaveable: if the phone rotates while the sheet is open, it stays open.
+    var showTradeSheet by rememberSaveable { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    val resources = LocalResources.current
+
+    // React once to a completed trade: close the sheet, confirm with a snackbar, acknowledge.
+    // The snackbar is launched in `scope` because acknowledging changes the key of this
+    // LaunchedEffect, which cancels its own coroutine.
+    LaunchedEffect(tradeState.completed) {
+        val trade = tradeState.completed ?: return@LaunchedEffect
+        showTradeSheet = false
+        val message = resources.getQuantityString(
+            if (trade.type == TradeType.BUY) R.plurals.trade_success_bought else R.plurals.trade_success_sold,
+            trade.quantity,
+            trade.quantity,
+            trade.symbol,
+            Formatters.currency(trade.price),
+        )
+        scope.launch { snackbarHostState.showSnackbar(message) }
+        tradeViewModel.onCompletionHandled()
+    }
 
     StockDetailContent(
         symbol = viewModel.symbol,
         uiState = uiState,
         chartState = chartState,
+        snackbarHostState = snackbarHostState,
         onBack = onBack,
         onToggleWatchlist = viewModel::toggleWatchlist,
         onSelectRange = viewModel::selectRange,
+        onTrade = { type ->
+            tradeViewModel.open(type)
+            showTradeSheet = true
+        },
         onRetry = viewModel::retry,
         onRetryChart = viewModel::retryChart,
     )
+
+    if (showTradeSheet) {
+        TradeSheet(
+            state = tradeState,
+            onDismiss = { showTradeSheet = false },
+            onTypeChange = tradeViewModel::onTypeChange,
+            onQuantityChange = tradeViewModel::onQuantityChange,
+            onUseMax = tradeViewModel::onUseMax,
+            onSubmit = tradeViewModel::submit,
+        )
+    }
 }
 
 @Composable
@@ -82,9 +142,11 @@ fun StockDetailContent(
     symbol: String,
     uiState: UiState<StockDetail>,
     chartState: ChartUiState,
+    snackbarHostState: SnackbarHostState,
     onBack: () -> Unit,
     onToggleWatchlist: () -> Unit,
     onSelectRange: (ChartRange) -> Unit,
+    onTrade: (TradeType) -> Unit,
     onRetry: () -> Unit,
     onRetryChart: () -> Unit,
 ) {
@@ -100,6 +162,12 @@ fun StockDetailContent(
                 },
             )
         },
+        bottomBar = {
+            if (uiState is UiState.Success) {
+                TradeButtons(canSell = uiState.data.position != null, onTrade = onTrade)
+            }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
         val contentModifier = Modifier.padding(innerPadding)
         when (uiState) {
@@ -275,9 +343,15 @@ private fun PositionCard(position: HoldingValuation) {
         StatRow(stringResource(R.string.position_shares), position.holding.quantity.toString())
         StatRow(stringResource(R.string.position_average_cost), Formatters.currency(position.holding.averageCost))
         StatRow(stringResource(R.string.position_market_value), Formatters.currency(position.marketValue))
-        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Text(stringResource(R.string.position_unrealized_pnl), color = MaterialTheme.colorScheme.onSurfaceVariant)
-            PriceChangeText(position.unrealizedPnl, position.unrealizedPnlPercent)
+            PriceChangeText(position.unrealizedPnl, position.unrealizedPnlPercent, style = MaterialTheme.typography.bodyLarge)
         }
     }
 }
@@ -324,6 +398,34 @@ private fun StatRow(label: String, value: String) {
     }
 }
 
+/** Sticky Buy / Sell buttons. Sell is disabled until the user owns shares. */
+@Composable
+private fun TradeButtons(canSell: Boolean, onTrade: (TradeType) -> Unit) {
+    Surface(tonalElevation = 3.dp) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            OutlinedButton(
+                onClick = { onTrade(TradeType.SELL) },
+                enabled = canSell,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp),
+            ) { Text(stringResource(R.string.trade_sell)) }
+            Button(
+                onClick = { onTrade(TradeType.BUY) },
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp),
+            ) { Text(stringResource(R.string.trade_buy)) }
+        }
+    }
+}
+
 @Composable
 private fun WatchlistToggle(isWatched: Boolean, onClick: () -> Unit) {
     IconButton(onClick = onClick) {
@@ -358,9 +460,11 @@ private fun StockDetailPreview() {
             symbol = "IBKR",
             uiState = UiState.Success(StockDetail(stock, quote, isWatched = true, position = HoldingValuation.from(holding, quote))),
             chartState = ChartUiState(ChartRange.MONTH, UiState.Success(points)),
+            snackbarHostState = remember { SnackbarHostState() },
             onBack = {},
             onToggleWatchlist = {},
             onSelectRange = {},
+            onTrade = {},
             onRetry = {},
             onRetryChart = {},
         )

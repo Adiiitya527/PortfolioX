@@ -51,6 +51,43 @@
     <string name="position_market_value">Market value</string>
     <string name="position_unrealized_pnl">Unrealized P&amp;L</string>
 
+    <!-- Trading -->
+    <string name="trade_buy">Buy</string>
+    <string name="trade_sell">Sell</string>
+    <string name="trade_title_buy">Buy %1$s</string>
+    <string name="trade_title_sell">Sell %1$s</string>
+    <string name="trade_market_price">Market price</string>
+    <string name="trade_cash_available">Cash available</string>
+    <string name="trade_shares_owned">Shares owned</string>
+    <string name="trade_quantity">Number of shares</string>
+    <string name="trade_max">Max</string>
+    <string name="trade_estimated_total">Estimated total</string>
+    <string name="trade_disclaimer">Simulated market order at the live price. No real money is involved.</string>
+    <string name="trade_error_invalid_quantity">Enter a whole number of shares greater than zero.</string>
+    <string name="trade_error_price_unavailable">The price isn\'t available yet. Try again in a moment.</string>
+    <string name="trade_error_insufficient_cash">Not enough cash. This order needs %1$s and you have %2$s.</string>
+    <string name="trade_error_no_shares">You don\'t own any shares of this stock.</string>
+    <plurals name="trade_error_insufficient_shares">
+        <item quantity="one">You own only %d share.</item>
+        <item quantity="other">You own only %d shares.</item>
+    </plurals>
+    <plurals name="trade_confirm_buy">
+        <item quantity="one">Buy %d share</item>
+        <item quantity="other">Buy %d shares</item>
+    </plurals>
+    <plurals name="trade_confirm_sell">
+        <item quantity="one">Sell %d share</item>
+        <item quantity="other">Sell %d shares</item>
+    </plurals>
+    <plurals name="trade_success_bought">
+        <item quantity="one">Bought %1$d share of %2$s at %3$s</item>
+        <item quantity="other">Bought %1$d shares of %2$s at %3$s</item>
+    </plurals>
+    <plurals name="trade_success_sold">
+        <item quantity="one">Sold %1$d share of %2$s at %3$s</item>
+        <item quantity="other">Sold %1$d shares of %2$s at %3$s</item>
+    </plurals>
+
     <!-- Portfolio -->
     <string name="portfolio_cash_available">Cash available</string>
     <string name="portfolio_coming_soon">Holdings and performance arrive in Phase 7.</string>
