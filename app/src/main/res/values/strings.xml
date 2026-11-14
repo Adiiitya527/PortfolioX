@@ -1,3 +1,28 @@
 <resources>
     <string name="app_name">PortfolioX</string>
+
+    <!-- Navigation -->
+    <string name="nav_portfolio">Portfolio</string>
+    <string name="nav_watchlist">Watchlist</string>
+    <string name="nav_history">History</string>
+    <string name="action_back">Back</string>
+    <string name="action_search">Search stocks</string>
+
+    <!-- Common states -->
+    <string name="error_title">Something went wrong</string>
+    <string name="error_generic">An unexpected error occurred. Please try again.</string>
+    <string name="error_network">Can\'t reach the market data service. Check your connection and try again.</string>
+    <string name="error_stock_not_found">We couldn\'t find that stock.</string>
+    <string name="action_retry">Try again</string>
+
+    <!-- Portfolio -->
+    <string name="portfolio_cash_available">Cash available</string>
+    <string name="portfolio_coming_soon">Holdings and performance arrive in Phase 7.</string>
+
+    <!-- Placeholders until their phases -->
+    <string name="placeholder_title">Coming soon</string>
+    <string name="watchlist_placeholder">The watchlist arrives in Phase 4. Use search to open a stock.</string>
+    <string name="search_placeholder">Search arrives in Phase 4. Tap a sample stock to try navigation.</string>
+    <string name="stock_detail_placeholder">Price, chart and trading for %1$s arrive in Phases 5 and 6.</string>
+    <string name="history_placeholder">Transaction history arrives in Phase 8.</string>
 </resources>

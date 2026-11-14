@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose) // Compose compiler: turns @Composable functions into UI code
     alias(libs.plugins.ksp) // Kotlin Symbol Processing: runs code generators such as Room's compiler
+    alias(libs.plugins.kotlin.serialization) // @Serializable: navigation routes now, JSON in Phase 9
 }
 
 android {
@@ -44,12 +45,16 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.navigation.compose)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.core)
 
     implementation(libs.kotlinx.coroutines.android)
 
