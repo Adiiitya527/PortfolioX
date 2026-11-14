@@ -124,8 +124,9 @@ fun SearchContent(
         }
     }
 
-    // Open the keyboard when the screen appears, since the user came here to type.
-    LaunchedEffect(Unit) { focusRequester.requestFocus() }
+    // Open the keyboard for a fresh search. When the user comes back from a stock with results
+    // already showing, leave the keyboard closed so the results stay visible.
+    LaunchedEffect(Unit) { if (query.isEmpty()) focusRequester.requestFocus() }
 }
 
 @Composable
