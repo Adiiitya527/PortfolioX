@@ -14,6 +14,9 @@ import com.portfoliox.data.repository.PortfolioRepository
 import com.portfoliox.data.repository.PortfolioRepositoryImpl
 import com.portfoliox.data.repository.WatchlistRepository
 import com.portfoliox.data.repository.WatchlistRepositoryImpl
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 
 /**
  * Manual dependency injection: the one place that decides which implementation of each
@@ -31,6 +34,12 @@ class AppContainer(context: Context) {
     private val database: PortfolioDatabase by lazy { PortfolioDatabase.create(context) }
 
     /**
+     * A coroutine scope that lives as long as the app, for work that outlives any one screen
+     * (shared price streams). SupervisorJob: one failing child doesn't cancel the others.
+     */
+    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    /**
      * The one switch between simulated and real-network market data, chosen at build time via
      * `portfoliox.marketDataSource` in gradle.properties. Everything above this line in the
      * architecture depends only on the MarketDataSource interface, so nothing else changes.
@@ -44,7 +53,7 @@ class AppContainer(context: Context) {
         }
     }
 
-    val marketRepository: MarketRepository by lazy { MarketRepositoryImpl(marketDataSource) }
+    val marketRepository: MarketRepository by lazy { MarketRepositoryImpl(marketDataSource, applicationScope) }
 
     val watchlistRepository: WatchlistRepository by lazy {
         WatchlistRepositoryImpl(database.watchlistDao())
