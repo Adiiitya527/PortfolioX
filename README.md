@@ -2,7 +2,7 @@
 
 A native Android app for tracking a simulated stock portfolio: a watchlist, live prices, historical charts, buy/sell trades, holdings and transaction history.
 
-> Status: **Phase 1 – domain models and sample market data**. Features are added phase by phase (see the roadmap below).
+> Status: **Phase 2 – Room persistence and repositories**. Features are added phase by phase (see the roadmap below).
 
 ## Tech stack
 
@@ -47,7 +47,7 @@ Packages are created as the phases that need them are implemented.
 
 - [x] Phase 0 – Project setup, theme, Git
 - [x] Phase 1 – Domain models, sample market data, business logic and tests
-- [ ] Phase 2 – Room persistence and repositories
+- [x] Phase 2 – Room persistence and repositories
 - [ ] Phase 3 – App shell: navigation and shared UI state
 - [ ] Phase 4 – Watchlist and search
 - [ ] Phase 5 – Stock details and price chart
@@ -62,4 +62,4 @@ Packages are created as the phases that need them are implemented.
 1. Open the project folder in Android Studio and wait for Gradle sync.
 2. Select an emulator or device and press **Run**.
 
-Command line: `./gradlew assembleDebug` builds the APK, and `./gradlew test` runs the unit tests.
+Command line: `./gradlew assembleDebug` builds the APK, `./gradlew testDebugUnitTest` runs the JVM unit tests, and `./gradlew connectedDebugAndroidTest` runs the database tests on a running emulator.
