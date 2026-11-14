@@ -90,7 +90,17 @@
 
     <!-- Portfolio -->
     <string name="portfolio_cash_available">Cash available</string>
-    <string name="portfolio_coming_soon">Holdings and performance arrive in Phase 7.</string>
+    <string name="dashboard_total_value">Total account value</string>
+    <string name="dashboard_invested">Invested</string>
+    <string name="dashboard_holdings_value">Holdings value</string>
+    <string name="dashboard_unrealized_pnl">Unrealized P&amp;L</string>
+    <string name="dashboard_holdings_title">Holdings (%1$d)</string>
+    <string name="dashboard_allocation">%1$s%%</string>
+    <string name="dashboard_no_holdings">You don\'t own any stocks yet. Find a company and tap Buy to place a simulated trade with your $100,000 starting cash.</string>
+    <plurals name="dashboard_shares_at_average">
+        <item quantity="one">%1$d share · avg %2$s</item>
+        <item quantity="other">%1$d shares · avg %2$s</item>
+    </plurals>
 
     <!-- Placeholders until their phases -->
     <string name="placeholder_title">Coming soon</string>

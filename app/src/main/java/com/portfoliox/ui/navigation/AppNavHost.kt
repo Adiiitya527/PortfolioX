@@ -31,7 +31,7 @@ fun AppNavHost(
         val openStock: (String) -> Unit = { symbol -> navController.navigate(StockDetailRoute(symbol)) }
 
         composable<PortfolioRoute> {
-            DashboardScreen()
+            DashboardScreen(onStockClick = openStock, onSearchClick = { navController.navigate(SearchRoute) })
         }
         composable<WatchlistRoute> {
             WatchlistScreen(onSearchClick = { navController.navigate(SearchRoute) }, onStockClick = openStock)

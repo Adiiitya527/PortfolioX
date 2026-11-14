@@ -2,7 +2,7 @@
 
 A native Android app for tracking a simulated stock portfolio: a watchlist, live prices, historical charts, buy/sell trades, holdings and transaction history.
 
-> Status: **Phase 6 – simulated buy/sell**. Features are added phase by phase (see the roadmap below).
+> Status: **Phase 7 – dashboard and holdings**. Features are added phase by phase (see the roadmap below).
 
 ## Tech stack
 
@@ -52,7 +52,7 @@ Packages are created as the phases that need them are implemented.
 - [x] Phase 4 – Watchlist and search
 - [x] Phase 5 – Stock details and price chart
 - [x] Phase 6 – Simulated buy/sell
-- [ ] Phase 7 – Dashboard and holdings
+- [x] Phase 7 – Dashboard and holdings
 - [ ] Phase 8 – Transaction history
 - [ ] Phase 9 – REST API integration
 - [ ] Phase 10 – Polish
