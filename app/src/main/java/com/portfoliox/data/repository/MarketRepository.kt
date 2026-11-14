@@ -6,6 +6,7 @@ import com.portfoliox.domain.model.PricePoint
 import com.portfoliox.domain.model.Quote
 import com.portfoliox.domain.model.Stock
 import kotlinx.coroutines.flow.Flow
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Market data for the UI layer. ViewModels depend on this interface and never on a data source,
@@ -23,8 +24,8 @@ interface MarketRepository {
 }
 
 /**
- * Today this forwards straight to the data source. It's the place where caching
- * (for example keeping price history in memory) would go when it's needed.
+ * Forwards to the data source, and caches stock details (name, exchange, sector), which
+ * almost never change. Prices and history aren't cached because they go stale.
  *
  * No dispatcher switching is needed: suspend functions from Room and Retrofit are "main-safe",
  * meaning they move their own blocking work off the main thread.
@@ -33,9 +34,14 @@ class MarketRepositoryImpl(
     private val dataSource: MarketDataSource,
 ) : MarketRepository {
 
-    override suspend fun searchStocks(query: String): List<Stock> = dataSource.searchStocks(query)
+    // ConcurrentHashMap: several coroutines may read and write the cache at the same time.
+    private val stockCache = ConcurrentHashMap<String, Stock>()
 
-    override suspend fun getStock(symbol: String): Stock = dataSource.getStock(symbol)
+    override suspend fun searchStocks(query: String): List<Stock> =
+        dataSource.searchStocks(query).onEach { stockCache[it.symbol] = it }
+
+    override suspend fun getStock(symbol: String): Stock =
+        stockCache[symbol] ?: dataSource.getStock(symbol).also { stockCache[symbol] = it }
 
     override suspend fun getQuote(symbol: String): Quote = dataSource.getQuote(symbol)
 
