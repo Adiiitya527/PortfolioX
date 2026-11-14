@@ -37,6 +37,13 @@ class MarketRepositoryImplTest {
     }
 
     @Test
+    fun `getStocks keeps the requested order and skips unknown symbols`() = runTest {
+        val stocks = repository.getStocks(listOf("MSFT", "NOPE", "AAPL"))
+
+        assertEquals(listOf("MSFT", "AAPL"), stocks.map { it.symbol })
+    }
+
+    @Test
     fun `search results fill the cache too`() = runTest {
         repository.searchStocks("IBKR")
 

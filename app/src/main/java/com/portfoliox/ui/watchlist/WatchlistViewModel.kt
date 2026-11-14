@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.portfoliox.data.market.StockNotFoundException
 import com.portfoliox.data.repository.MarketRepository
 import com.portfoliox.data.repository.WatchlistRepository
 import com.portfoliox.domain.model.Quote
@@ -14,9 +13,6 @@ import com.portfoliox.ui.common.UiState
 import com.portfoliox.ui.common.appContainer
 import com.portfoliox.ui.common.toUserMessage
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -71,7 +67,8 @@ class WatchlistViewModel(
         if (entries.isEmpty()) return flow { emit(UiState.Empty) }
 
         return flow {
-            val stocks = loadStocks(entries.map { it.symbol })
+            // Parallel, cached lookup; symbols the market no longer offers are skipped.
+            val stocks = marketRepository.getStocks(entries.map { it.symbol })
             val quotes = marketRepository.observeQuotes(stocks.map { it.symbol }.toSet())
                 .onStart { emit(emptyMap()) } // show names immediately, prices fill in on the first tick
             emitAll(
@@ -81,25 +78,6 @@ class WatchlistViewModel(
             )
         }
     }
-
-    /**
-     * Loads stock details for all symbols in parallel: `async` starts each request, `awaitAll`
-     * waits for every one. With 10 symbols at 300 ms each, that's ~300 ms instead of 3 s.
-     * coroutineScope ensures that if one fails, the others are cancelled (structured concurrency).
-     */
-    private suspend fun loadStocks(symbols: List<String>): List<Stock> = coroutineScope {
-        symbols
-            .map { symbol -> async { findStock(symbol) } }
-            .awaitAll()
-            .filterNotNull() // a symbol no longer offered by the market is skipped, not fatal
-    }
-
-    private suspend fun findStock(symbol: String): Stock? =
-        try {
-            marketRepository.getStock(symbol)
-        } catch (_: StockNotFoundException) {
-            null
-        }
 
     fun retry() {
         retryTrigger.value++

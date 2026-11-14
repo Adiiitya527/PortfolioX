@@ -61,6 +61,11 @@ class FakeMarketRepository(
         return stocks.firstOrNull { it.symbol == symbol } ?: throw StockNotFoundException(symbol)
     }
 
+    override suspend fun getStocks(symbols: Collection<String>): List<Stock> {
+        failure?.let { throw it }
+        return symbols.mapNotNull { symbol -> stocks.firstOrNull { it.symbol == symbol } }
+    }
+
     override suspend fun getQuote(symbol: String): Quote =
         quotes.value[symbol] ?: throw StockNotFoundException(symbol)
 
