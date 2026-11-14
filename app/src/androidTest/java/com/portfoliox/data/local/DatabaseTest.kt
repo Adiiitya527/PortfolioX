@@ -95,6 +95,25 @@ class DatabaseTest {
     }
 
     @Test
+    fun resetEmptiesEveryPortfolioTableButKeepsTheWatchlist() = runTest {
+        val repository = PortfolioRepositoryImpl(
+            accountDao = database.accountDao(),
+            holdingDao = database.holdingDao(),
+            transactionDao = database.transactionDao(),
+            transactionRunner = RoomTransactionRunner(database),
+        )
+        database.watchlistDao().insert(WatchlistEntity("AAPL", Instant.EPOCH))
+        repository.executeTrade(TradeOrder("AAPL", TradeType.BUY, 10, BigDecimal("150.00")))
+
+        repository.resetPortfolio()
+
+        assertEquals(BigDecimal("100000.00"), repository.observeCash().first())
+        assertTrue(repository.observeHoldings().first().isEmpty())
+        assertTrue(repository.observeTransactions().first().isEmpty())
+        assertTrue(database.watchlistDao().observeContains("AAPL").first())
+    }
+
+    @Test
     fun repositoryTradeRoundTripAgainstRealDatabase() = runTest {
         val repository = PortfolioRepositoryImpl(
             accountDao = database.accountDao(),

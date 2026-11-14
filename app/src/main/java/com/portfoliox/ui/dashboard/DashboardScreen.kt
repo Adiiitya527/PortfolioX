@@ -2,6 +2,7 @@ package com.portfoliox.ui.dashboard
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,18 +14,30 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
@@ -47,6 +60,7 @@ import com.portfoliox.ui.common.PortfolioXTopBar
 import com.portfoliox.ui.common.PriceChangeText
 import com.portfoliox.ui.common.UiState
 import com.portfoliox.ui.theme.PortfolioXTheme
+import kotlinx.coroutines.launch
 import java.math.BigDecimal
 
 /**
@@ -61,7 +75,7 @@ fun DashboardScreen(
     viewModel: DashboardViewModel = viewModel(factory = DashboardViewModel.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    DashboardContent(uiState, onStockClick, onSearchClick, onRetry = viewModel::retry)
+    DashboardContent(uiState, onStockClick, onSearchClick, onRetry = viewModel::retry, onReset = viewModel::resetPortfolio)
 }
 
 /** Stateless content: depends only on its parameters, so it can be previewed with any state. */
@@ -71,7 +85,14 @@ fun DashboardContent(
     onStockClick: (String) -> Unit,
     onSearchClick: () -> Unit,
     onRetry: () -> Unit,
+    onReset: () -> Unit,
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    val resetMessage = stringResource(R.string.dashboard_reset_done)
+    // Dialog visibility is UI state; rememberSaveable keeps the dialog open across rotation.
+    var showResetDialog by rememberSaveable { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             PortfolioXTopBar(
@@ -80,9 +101,11 @@ fun DashboardContent(
                     IconButton(onClick = onSearchClick) {
                         Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.action_search))
                     }
+                    OverflowMenu(onResetClick = { showResetDialog = true })
                 },
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
         val contentModifier = Modifier.padding(innerPadding)
         when (uiState) {
@@ -93,6 +116,55 @@ fun DashboardContent(
             is UiState.Success -> DashboardList(uiState.data, onStockClick, onSearchClick, contentModifier)
         }
     }
+
+    if (showResetDialog) {
+        ResetDialog(
+            onConfirm = {
+                showResetDialog = false
+                onReset()
+                scope.launch { snackbarHostState.showSnackbar(resetMessage) }
+            },
+            onDismiss = { showResetDialog = false },
+        )
+    }
+}
+
+/** The ⋮ menu in the top bar. DropdownMenu is anchored to the Box that wraps the button. */
+@Composable
+private fun OverflowMenu(onResetClick: () -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { expanded = true }) {
+            Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.action_more_options))
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.dashboard_reset)) },
+                onClick = {
+                    expanded = false
+                    onResetClick()
+                },
+            )
+        }
+    }
+}
+
+/** Destructive actions get a confirmation that says exactly what will be lost. */
+@Composable
+private fun ResetDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.dashboard_reset_title)) },
+        text = { Text(stringResource(R.string.dashboard_reset_message)) },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(stringResource(R.string.dashboard_reset_confirm), color = MaterialTheme.colorScheme.error)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
+        },
+    )
 }
 
 @Composable
@@ -277,6 +349,7 @@ private fun DashboardPreview() {
             onStockClick = {},
             onSearchClick = {},
             onRetry = {},
+            onReset = {},
         )
     }
 }
@@ -290,6 +363,7 @@ private fun DashboardEmptyPreview() {
             onStockClick = {},
             onSearchClick = {},
             onRetry = {},
+            onReset = {},
         )
     }
 }

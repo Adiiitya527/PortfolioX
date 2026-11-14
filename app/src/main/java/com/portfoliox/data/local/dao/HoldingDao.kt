@@ -25,4 +25,7 @@ interface HoldingDao {
 
     @Query("DELETE FROM holdings WHERE symbol = :symbol")
     suspend fun delete(symbol: String)
+
+    @Query("DELETE FROM holdings")
+    suspend fun deleteAll()
 }

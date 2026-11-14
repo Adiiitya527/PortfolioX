@@ -105,6 +105,18 @@ class PortfolioRepositoryImplTest {
     }
 
     @Test
+    fun `reset returns to starting cash with no holdings or history`() = runTest {
+        repository.executeTrade(buy("AAPL", 10, "150.00"))
+        repository.executeTrade(sell("AAPL", 4, "175.00"))
+
+        repository.resetPortfolio()
+
+        assertMoney("10000.00", repository.observeCash().first())
+        assertTrue(repository.observeHoldings().first().isEmpty())
+        assertTrue(repository.observeTransactions().first().isEmpty())
+    }
+
+    @Test
     fun `transaction ids are returned to the caller`() = runTest {
         val first = repository.executeTrade(buy("AAPL", 1, "150.00")) as TradeResult.Success
         val second = repository.executeTrade(buy("MSFT", 1, "400.00")) as TradeResult.Success

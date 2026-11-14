@@ -28,6 +28,10 @@ class FakeAccountDao : AccountDao {
     override suspend fun upsert(entity: AccountEntity) {
         cash.value = entity.cashBalance
     }
+
+    override suspend fun deleteAll() {
+        cash.value = null
+    }
 }
 
 class FakeHoldingDao : HoldingDao {
@@ -38,6 +42,7 @@ class FakeHoldingDao : HoldingDao {
     override suspend fun get(symbol: String): HoldingEntity? = rows.value[symbol]
     override suspend fun upsert(entity: HoldingEntity) = rows.update { it + (entity.symbol to entity) }
     override suspend fun delete(symbol: String) = rows.update { it - symbol }
+    override suspend fun deleteAll() = rows.update { emptyMap() }
 }
 
 class FakeTransactionDao : TransactionDao {
@@ -52,6 +57,8 @@ class FakeTransactionDao : TransactionDao {
         rows.update { it + entity.copy(id = id) }
         return id
     }
+
+    override suspend fun deleteAll() = rows.update { emptyList() }
 }
 
 /** Runs the block directly. Atomicity itself is tested against real Room in androidTest. */

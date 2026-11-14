@@ -43,6 +43,15 @@ class FakePortfolioRepository : PortfolioRepository {
         return checkNotNull(nextTradeResult) { "Set nextTradeResult before executing a trade" }
     }
 
+    var resetCalls = 0
+
+    override suspend fun resetPortfolio() {
+        resetCalls++
+        cash.value = "100000.00".toMoney()
+        holdings.value = emptyList()
+        transactions.value = emptyList()
+    }
+
     private fun <T> failable(source: Flow<T>): Flow<T> = flow {
         failure?.let { throw it }
         emitAll(source)

@@ -16,4 +16,7 @@ interface TransactionDao {
     /** Returns the generated id of the new row. */
     @Insert
     suspend fun insert(entity: TransactionEntity): Long
+
+    @Query("DELETE FROM transactions")
+    suspend fun deleteAll()
 }

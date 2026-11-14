@@ -130,6 +130,19 @@ class DashboardViewModelTest {
     }
 
     @Test
+    fun `reset clears holdings and restores the starting cash`() = runTest {
+        portfolio.cash.value = "50000.00".toMoney()
+        portfolio.holdings.value = listOf(holding("AAPL", 10, "150"))
+        val viewModel = createViewModel()
+
+        viewModel.resetPortfolio()
+
+        assertEquals(1, portfolio.resetCalls)
+        assertTrue(viewModel.data().holdings.isEmpty())
+        assertMoney("100000.00", viewModel.data().summary.totalValue)
+    }
+
+    @Test
     fun `repository failure shows an error, and retry recovers`() = runTest {
         portfolio.failure = IOException("disk unavailable")
         val viewModel = createViewModel()

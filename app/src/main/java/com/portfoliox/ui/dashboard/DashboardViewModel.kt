@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.math.BigDecimal
 
 /** One row in the holdings list. */
@@ -115,6 +116,14 @@ class DashboardViewModel(
 
     fun retry() {
         retryTrigger.value++
+    }
+
+    /**
+     * Wipes holdings, history and cash back to the starting balance. Room's observable queries
+     * re-emit, so this screen (and History) update on their own.
+     */
+    fun resetPortfolio() {
+        viewModelScope.launch { portfolioRepository.resetPortfolio() }
     }
 
     companion object {

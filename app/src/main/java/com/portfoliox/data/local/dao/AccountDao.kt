@@ -19,4 +19,8 @@ interface AccountDao {
 
     @Upsert
     suspend fun upsert(entity: AccountEntity)
+
+    /** With no row, the repository reports the starting cash again. */
+    @Query("DELETE FROM account")
+    suspend fun deleteAll()
 }

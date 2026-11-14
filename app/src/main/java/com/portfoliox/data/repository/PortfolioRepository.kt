@@ -33,6 +33,9 @@ interface PortfolioRepository {
     fun observeHolding(symbol: String): Flow<Holding?>
     fun observeTransactions(): Flow<List<Transaction>>
     suspend fun executeTrade(order: TradeOrder): TradeResult
+
+    /** Back to a fresh account: starting cash, no holdings, no history. The watchlist is kept. */
+    suspend fun resetPortfolio()
 }
 
 /**
@@ -110,6 +113,15 @@ class PortfolioRepositoryImpl(
         )
         val id = transactionDao.insert(transaction.toEntity())
         return TradeResult.Success(transaction.copy(id = id))
+    }
+
+    /** All three deletes in one transaction: the account is never seen half-reset. */
+    override suspend fun resetPortfolio() {
+        transactionRunner.run {
+            holdingDao.deleteAll()
+            transactionDao.deleteAll()
+            accountDao.deleteAll()
+        }
     }
 
     companion object {

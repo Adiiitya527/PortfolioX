@@ -17,6 +17,8 @@
     <string name="action_undo">Undo</string>
     <string name="action_remove">Remove</string>
     <string name="action_clear">Clear</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_more_options">More options</string>
 
     <!-- Watchlist -->
     <string name="watchlist_empty_title">Your watchlist is empty</string>
@@ -96,6 +98,11 @@
     <string name="dashboard_unrealized_pnl">Unrealized P&amp;L</string>
     <string name="dashboard_holdings_title">Holdings (%1$d)</string>
     <string name="dashboard_allocation">%1$s%%</string>
+    <string name="dashboard_reset">Reset portfolio</string>
+    <string name="dashboard_reset_title">Reset portfolio?</string>
+    <string name="dashboard_reset_message">All holdings and transaction history will be deleted, and your cash will be set back to $100,000. Your watchlist is kept. This can\'t be undone.</string>
+    <string name="dashboard_reset_confirm">Reset</string>
+    <string name="dashboard_reset_done">Portfolio reset to $100,000.00</string>
     <string name="dashboard_no_holdings">You don\'t own any stocks yet. Find a company and tap Buy to place a simulated trade with your $100,000 starting cash.</string>
     <plurals name="dashboard_shares_at_average">
         <item quantity="one">%1$d share · avg %2$s</item>
