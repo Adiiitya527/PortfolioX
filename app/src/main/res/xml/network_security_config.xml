@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Android blocks plain HTTP by default (only HTTPS is allowed). The local development server
+    has no TLS certificate, so HTTP is allowed for these local addresses only. Every other host
+    still requires HTTPS.
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- The emulator's alias for the host computer -->
+        <domain includeSubdomains="false">10.0.2.2</domain>
+        <domain includeSubdomains="false">localhost</domain>
+    </domain-config>
+</network-security-config>

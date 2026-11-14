@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose) // Compose compiler: turns @Composable functions into UI code
     alias(libs.plugins.ksp) // Kotlin Symbol Processing: runs code generators such as Room's compiler
-    alias(libs.plugins.kotlin.serialization) // @Serializable: navigation routes now, JSON in Phase 9
+    alias(libs.plugins.kotlin.serialization) // @Serializable: navigation routes and JSON DTOs
 }
 
 android {
@@ -19,6 +19,13 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Which market data source to use, read from gradle.properties at build time and exposed
+        // to Kotlin as BuildConfig constants. "sample" works offline; "remote" calls the FastAPI server.
+        val marketDataSource = providers.gradleProperty("portfoliox.marketDataSource").getOrElse("sample")
+        val apiBaseUrl = providers.gradleProperty("portfoliox.apiBaseUrl").getOrElse("http://localhost:8000/")
+        buildConfigField("String", "MARKET_DATA_SOURCE", "\"$marketDataSource\"")
+        buildConfigField("String", "MARKET_API_BASE_URL", "\"$apiBaseUrl\"")
     }
 
     buildTypes {
@@ -38,6 +45,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true // generates the BuildConfig class with the fields above
     }
 }
 
@@ -61,6 +69,11 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
+
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.kotlinx.serialization)
+    implementation(libs.okhttp.logging.interceptor)
+    implementation(libs.kotlinx.serialization.json)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

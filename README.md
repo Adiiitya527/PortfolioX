@@ -2,7 +2,7 @@
 
 A native Android app for tracking a simulated stock portfolio: a watchlist, live prices, historical charts, buy/sell trades, holdings and transaction history.
 
-> Status: **Phase 8 – transaction history**. Features are added phase by phase (see the roadmap below).
+> Status: **Phase 9 – REST API integration**. Features are added phase by phase (see the roadmap below).
 
 ## Tech stack
 
@@ -14,15 +14,16 @@ A native Android app for tracking a simulated stock portfolio: a watchlist, live
 | Async | Kotlin Coroutines and Flow |
 | Persistence | Room (SQLite) |
 | Networking | Retrofit + kotlinx.serialization |
-| Testing | JUnit 4, kotlinx-coroutines-test, Room in-memory tests |
+| Testing | JUnit 4, kotlinx-coroutines-test, Room in-memory tests, pytest (server) |
+| Mock backend | FastAPI (Python) in `server/` |
 
 ## Architecture
 
 ```
 UI (Compose screens)  ──events──▶  ViewModel  ──▶  Repository  ──▶  Room DAOs (user data)
         ▲                              │                     └──▶  MarketDataSource (prices)
-        └──── StateFlow<UiState> ◀─────┘                               ├─ FakeMarketDataSource (sample data)
-                                                                       └─ RemoteMarketDataSource (Retrofit)
+        └──── StateFlow<UiState> ◀─────┘                               ├─ SampleMarketDataSource (built-in simulator)
+                                                                       └─ RemoteMarketDataSource (Retrofit → FastAPI)
 ```
 
 - **Unidirectional data flow:** screens render state and send events; ViewModels own the state.
@@ -41,7 +42,7 @@ app/src/main/java/com/portfoliox/
 └── ui/         Compose screens, ViewModels, theme, navigation
 ```
 
-Packages are created as the phases that need them are implemented.
+The `server/` folder holds the FastAPI mock backend used by `RemoteMarketDataSource`.
 
 ## Roadmap
 
@@ -54,7 +55,7 @@ Packages are created as the phases that need them are implemented.
 - [x] Phase 6 – Simulated buy/sell
 - [x] Phase 7 – Dashboard and holdings
 - [x] Phase 8 – Transaction history
-- [ ] Phase 9 – REST API integration
+- [x] Phase 9 – REST API integration
 - [ ] Phase 10 – Polish
 
 ## Running the app
@@ -63,3 +64,11 @@ Packages are created as the phases that need them are implemented.
 2. Select an emulator or device and press **Run**.
 
 Command line: `./gradlew assembleDebug` builds the APK, `./gradlew testDebugUnitTest` runs the JVM unit tests, and `./gradlew connectedDebugAndroidTest` runs the database tests on a running emulator.
+
+## Using the FastAPI backend
+
+The app ships with a built-in market simulator, so it runs with no setup. To fetch market data over HTTP from the bundled FastAPI server instead:
+
+1. Start the server (see [server/README.md](server/README.md)): `.venv\Scripts\python -m uvicorn app.main:app --host 127.0.0.1 --port 8000`
+2. Forward the port to the emulator or phone: `adb reverse tcp:8000 tcp:8000`
+3. Set `portfoliox.marketDataSource=remote` in `gradle.properties` and run the app.

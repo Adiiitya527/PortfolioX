@@ -1,9 +1,12 @@
 package com.portfoliox.di
 
 import android.content.Context
+import com.portfoliox.BuildConfig
 import com.portfoliox.data.local.PortfolioDatabase
 import com.portfoliox.data.local.RoomTransactionRunner
 import com.portfoliox.data.market.MarketDataSource
+import com.portfoliox.data.market.remote.RemoteMarketDataSource
+import com.portfoliox.data.market.remote.createMarketApi
 import com.portfoliox.data.market.sample.SampleMarketDataSource
 import com.portfoliox.data.repository.MarketRepository
 import com.portfoliox.data.repository.MarketRepositoryImpl
@@ -27,8 +30,19 @@ class AppContainer(context: Context) {
 
     private val database: PortfolioDatabase by lazy { PortfolioDatabase.create(context) }
 
-    // Swap this line for a Retrofit-based source in Phase 9. Nothing else changes.
-    private val marketDataSource: MarketDataSource by lazy { SampleMarketDataSource() }
+    /**
+     * The one switch between simulated and real-network market data, chosen at build time via
+     * `portfoliox.marketDataSource` in gradle.properties. Everything above this line in the
+     * architecture depends only on the MarketDataSource interface, so nothing else changes.
+     */
+    private val marketDataSource: MarketDataSource by lazy {
+        when (BuildConfig.MARKET_DATA_SOURCE) {
+            "remote" -> RemoteMarketDataSource(
+                api = createMarketApi(BuildConfig.MARKET_API_BASE_URL, enableLogging = BuildConfig.DEBUG),
+            )
+            else -> SampleMarketDataSource()
+        }
+    }
 
     val marketRepository: MarketRepository by lazy { MarketRepositoryImpl(marketDataSource) }
 
