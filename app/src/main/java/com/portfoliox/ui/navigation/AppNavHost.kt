@@ -5,7 +5,6 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
 import com.portfoliox.ui.dashboard.DashboardScreen
 import com.portfoliox.ui.history.HistoryScreen
 import com.portfoliox.ui.search.SearchScreen
@@ -43,10 +42,10 @@ fun AppNavHost(
         composable<SearchRoute> {
             SearchScreen(onBack = navController::navigateUp, onStockClick = openStock)
         }
-        composable<StockDetailRoute> { backStackEntry ->
-            // toRoute() rebuilds the typed route, arguments included, from the back stack entry.
-            val route: StockDetailRoute = backStackEntry.toRoute()
-            StockDetailScreen(symbol = route.symbol, onBack = navController::navigateUp)
+        composable<StockDetailRoute> {
+            // The symbol argument travels with the back stack entry. StockDetailViewModel's
+            // factory reads it from the SavedStateHandle, so the screen needs no parameter for it.
+            StockDetailScreen(onBack = navController::navigateUp)
         }
     }
 }

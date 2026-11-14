@@ -45,6 +45,11 @@ class FakeMarketRepository(
     var failure: Throwable? = null
     val searchCalls = mutableListOf<String>()
 
+    /** Price history returned per range. Missing ranges return an empty list. */
+    var history: Map<ChartRange, List<PricePoint>> = emptyMap()
+    var historyFailure: Throwable? = null
+    val historyCalls = mutableListOf<ChartRange>()
+
     override suspend fun searchStocks(query: String): List<Stock> {
         searchCalls += query
         failure?.let { throw it }
@@ -62,7 +67,11 @@ class FakeMarketRepository(
     override fun observeQuotes(symbols: Set<String>): Flow<Map<String, Quote>> =
         quotes.map { all -> all.filterKeys { it in symbols } }
 
-    override suspend fun getPriceHistory(symbol: String, range: ChartRange): List<PricePoint> = emptyList()
+    override suspend fun getPriceHistory(symbol: String, range: ChartRange): List<PricePoint> {
+        historyCalls += range
+        historyFailure?.let { throw it }
+        return history[range].orEmpty()
+    }
 }
 
 /** An in-memory WatchlistRepository that keeps the same ordering rule as Room (newest first). */

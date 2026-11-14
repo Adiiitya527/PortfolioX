@@ -30,12 +30,32 @@
     <string name="search_no_results_title">No matches</string>
     <string name="search_no_results_message">No stocks match \"%1$s\". Try a ticker like AAPL or a name like Tesla.</string>
 
+    <!-- Stock detail -->
+    <string name="detail_today">today</string>
+    <string name="range_past_week">past week</string>
+    <string name="range_past_month">past month</string>
+    <string name="range_past_quarter">past 3 months</string>
+    <string name="range_past_year">past year</string>
+    <string name="chart_no_data">No price history is available for this range.</string>
+    <string name="chart_description">Price chart for %1$s over the %2$s. Drag across the chart to read individual prices.</string>
+    <string name="section_key_stats">Key statistics</string>
+    <string name="stat_open">Open</string>
+    <string name="stat_day_high">Day high</string>
+    <string name="stat_day_low">Day low</string>
+    <string name="stat_previous_close">Previous close</string>
+    <string name="stat_exchange">Exchange</string>
+    <string name="stat_sector">Sector</string>
+    <string name="section_position">Your position</string>
+    <string name="position_shares">Shares</string>
+    <string name="position_average_cost">Average cost</string>
+    <string name="position_market_value">Market value</string>
+    <string name="position_unrealized_pnl">Unrealized P&amp;L</string>
+
     <!-- Portfolio -->
     <string name="portfolio_cash_available">Cash available</string>
     <string name="portfolio_coming_soon">Holdings and performance arrive in Phase 7.</string>
 
     <!-- Placeholders until their phases -->
     <string name="placeholder_title">Coming soon</string>
-    <string name="stock_detail_placeholder">Price, chart and trading for %1$s arrive in Phases 5 and 6.</string>
     <string name="history_placeholder">Transaction history arrives in Phase 8.</string>
 </resources>
