@@ -10,6 +10,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 
 private val LightColorScheme = lightColorScheme(
     primary = BrandBlue,
+    inversePrimary = BrandBlueDark, // accent on dark "inverse" surfaces, e.g. the snackbar's action
     primaryContainer = BrandBlueContainer,
     onPrimaryContainer = OnBrandBlueContainer,
     secondary = Slate,
@@ -31,6 +32,7 @@ private val LightColorScheme = lightColorScheme(
 private val DarkColorScheme = darkColorScheme(
     primary = BrandBlueDark,
     onPrimary = OnBrandBlueDark,
+    inversePrimary = BrandBlue,
     primaryContainer = BrandBlueContainerDark,
     onPrimaryContainer = OnBrandBlueContainerDark,
     secondary = SlateDark,
