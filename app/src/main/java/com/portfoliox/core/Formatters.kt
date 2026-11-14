@@ -3,6 +3,7 @@ package com.portfoliox.core
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -49,6 +50,14 @@ object Formatters {
         DateTimeFormatter.ofPattern("d MMM yyyy, HH:mm", Locale.US)
 
     private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.US)
+    private val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm", Locale.US)
+
+    /** Time of day only: "15:30". */
+    fun time(instant: Instant, zone: ZoneId = ZoneId.systemDefault()): String =
+        timeFormatter.format(instant.atZone(zone))
+
+    /** A calendar date: "14 Nov 2026". */
+    fun date(date: LocalDate): String = dateFormatter.format(date)
 
     /** Formats an instant in the device's time zone: "14 Nov 2026, 15:30". */
     fun dateTime(instant: Instant, zone: ZoneId = ZoneId.systemDefault()): String =

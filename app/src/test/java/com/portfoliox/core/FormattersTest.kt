@@ -42,5 +42,7 @@ class FormattersTest {
 
         assertEquals("14 Nov 2026, 15:30", Formatters.dateTime(instant, ZoneOffset.ofHoursMinutes(5, 30)))
         assertEquals("14 Nov 2026", Formatters.date(instant, ZoneOffset.UTC))
+        assertEquals("15:30", Formatters.time(instant, ZoneOffset.ofHoursMinutes(5, 30)))
+        assertEquals("14 Nov 2026", Formatters.date(java.time.LocalDate.of(2026, 11, 14)))
     }
 }
