@@ -17,5 +17,10 @@ captures/
 .DS_Store
 Thumbs.db
 
-# Secrets (API keys will live here in Phase 9)
+# Secrets: never commit API keys or credentials
 secrets.properties
+
+# Python (server/)
+.venv/
+__pycache__/
+.pytest_cache/

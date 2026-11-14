@@ -1,0 +1,3 @@
+# Runtime dependencies for the PortfolioX Market API.
+fastapi==0.162.7
+uvicorn==0.54.0

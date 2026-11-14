@@ -1,0 +1,4 @@
+# Test dependencies (FastAPI's TestClient uses httpx2).
+-r requirements.txt
+pytest==9.2.0
+httpx2==2.16.0
