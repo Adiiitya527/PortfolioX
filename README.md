@@ -1,74 +1,97 @@
 # PortfolioX – Stock Portfolio Manager
 
-A native Android app for tracking a simulated stock portfolio: a watchlist, live prices, historical charts, buy/sell trades, holdings and transaction history.
+A native Android app for managing a simulated stock portfolio: search stocks, follow live prices on a watchlist, read historical charts, place simulated buy and sell orders, and track holdings, profit and loss, and transaction history. It comes with a small FastAPI server, so market data can come from a real REST API.
 
-> Status: **Phase 9 – REST API integration**. Features are added phase by phase (see the roadmap below).
+Built with Kotlin, Jetpack Compose, MVVM, Coroutines/Flow, Room and Retrofit.
+
+| Portfolio | Watchlist | Stock detail | Trade | History | Dark mode |
+|---|---|---|---|---|---|
+| <img src="docs/screenshots/portfolio.png" width="160" alt="Portfolio dashboard"> | <img src="docs/screenshots/watchlist.png" width="160" alt="Watchlist with live prices"> | <img src="docs/screenshots/stock-detail.png" width="160" alt="Stock detail with chart"> | <img src="docs/screenshots/trade-sheet.png" width="160" alt="Buy order sheet"> | <img src="docs/screenshots/history.png" width="160" alt="Transaction history"> | <img src="docs/screenshots/portfolio-dark.png" width="160" alt="Portfolio in dark mode"> |
+
+## Features
+
+- **Portfolio dashboard:** total account value, today's change, amount invested, unrealized P&L and cash, plus holdings sorted by value with their share of the portfolio. Everything updates live.
+- **Watchlist:** live prices; swipe to remove, with undo that restores the original position.
+- **Search:** by symbol or company name, debounced as you type; a star adds or removes a stock from the watchlist.
+- **Stock detail:** live quote, key statistics, your position, and a hand-drawn price chart (1W / 1M / 3M / 1Y) where you drag to read any point.
+- **Simulated trading:** buy and sell market orders at the live price, with validation as you type (cash, shares owned, quantity) and atomic execution.
+- **Transaction history:** grouped by day, filterable by buys and sells, with realized P&L per sell and in total.
+- **Reset portfolio** for a clean demo, dark mode, large-font support, and state restored after rotation or process death.
 
 ## Tech stack
 
 | Area | Choice |
 |---|---|
 | Language | Kotlin |
-| UI | Jetpack Compose, Material 3 |
+| UI | Jetpack Compose, Material 3, Navigation Compose (type-safe routes) |
 | Architecture | MVVM, repository pattern, manual dependency injection |
 | Async | Kotlin Coroutines and Flow |
 | Persistence | Room (SQLite) |
-| Networking | Retrofit + kotlinx.serialization |
-| Testing | JUnit 4, kotlinx-coroutines-test, Room in-memory tests, pytest (server) |
-| Mock backend | FastAPI (Python) in `server/` |
+| Networking | Retrofit, OkHttp, kotlinx.serialization |
+| Testing | JUnit 4, kotlinx-coroutines-test, Room in-memory tests, pytest |
+| Backend | FastAPI (Python) mock market data server in `server/` |
 
 ## Architecture
 
-```
-UI (Compose screens)  ──events──▶  ViewModel  ──▶  Repository  ──▶  Room DAOs (user data)
-        ▲                              │                     └──▶  MarketDataSource (prices)
-        └──── StateFlow<UiState> ◀─────┘                               ├─ SampleMarketDataSource (built-in simulator)
-                                                                       └─ RemoteMarketDataSource (Retrofit → FastAPI)
+```mermaid
+flowchart LR
+    UI["Compose screens"] -- events --> VM["ViewModels"]
+    VM -- "StateFlow&lt;UiState&gt;" --> UI
+    VM --> Repo["Repositories"]
+    Repo --> Room[("Room: watchlist, holdings,<br/>transactions, cash")]
+    Repo --> MDS{{"MarketDataSource"}}
+    MDS --> Sample["SampleMarketDataSource<br/>(built-in simulator)"]
+    MDS --> Remote["RemoteMarketDataSource<br/>(Retrofit)"] --> API["FastAPI server"]
+    Repo --> Domain["PortfolioCalculator<br/>TradeValidator"]
 ```
 
-- **Unidirectional data flow:** screens render state and send events; ViewModels own the state.
-- **Room is the single source of truth** for watchlist, holdings, transactions and cash.
-- **Market data sits behind an interface**, so sample data and a real REST API are interchangeable.
-- **Money uses `BigDecimal`**, never `Double`.
+- **Unidirectional data flow:** screens render a single `UiState` (Loading, Success, Empty or Error) and send events. ViewModels own the state.
+- **Room is the single source of truth** for everything the user owns. Screens observe Flow queries, so a trade updates every screen without any refresh code.
+- **Market data sits behind an interface.** The simulator and the REST API are interchangeable through one line in `AppContainer`.
+- **Business rules are pure Kotlin** (`domain/`), with no Android imports, and unit tested in isolation.
+- **Money is `BigDecimal`** end to end. It is stored as TEXT in SQLite and sent as JSON strings, never as floating point.
+- **Trades are atomic:** validation, holding update, cash update and the history record run in a single database transaction.
 
 ## Project structure
 
 ```
 app/src/main/java/com/portfoliox/
-├── di/         Dependency container that wires the app together
-├── core/       Formatting and other shared utilities
-├── domain/     Pure Kotlin models and business rules (no Android imports)
-├── data/       Room database, market data sources, repositories
-└── ui/         Compose screens, ViewModels, theme, navigation
+├── di/        AppContainer: creates and wires every dependency once
+├── core/      Formatters for money, percentages and dates
+├── domain/    Models, PortfolioCalculator, TradeValidator (pure Kotlin)
+├── data/
+│   ├── local/     Room entities, DAOs, database, TransactionRunner
+│   ├── market/    MarketDataSource interface, sample simulator, Retrofit remote source
+│   └── repository/ Market, Watchlist and Portfolio repositories
+└── ui/        Compose screens + ViewModels per feature, navigation, theme
+server/        FastAPI market data server with pytest suite
+docs/          Screenshots and interview notes
 ```
 
-The `server/` folder holds the FastAPI mock backend used by `RemoteMarketDataSource`.
+## Running
 
-## Roadmap
+1. Open the project in Android Studio and wait for Gradle sync.
+2. Choose an emulator or device and press **Run**.
 
-- [x] Phase 0 – Project setup, theme, Git
-- [x] Phase 1 – Domain models, sample market data, business logic and tests
-- [x] Phase 2 – Room persistence and repositories
-- [x] Phase 3 – App shell: navigation and shared UI state
-- [x] Phase 4 – Watchlist and search
-- [x] Phase 5 – Stock details and price chart
-- [x] Phase 6 – Simulated buy/sell
-- [x] Phase 7 – Dashboard and holdings
-- [x] Phase 8 – Transaction history
-- [x] Phase 9 – REST API integration
-- [ ] Phase 10 – Polish
+By default the app uses the built-in market simulator and needs no setup.
 
-## Running the app
+### With the FastAPI backend
 
-1. Open the project folder in Android Studio and wait for Gradle sync.
-2. Select an emulator or device and press **Run**.
+```powershell
+cd server
+py -m venv .venv
+.venv\Scripts\python -m pip install -r requirements-dev.txt
+.venv\Scripts\python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+adb reverse tcp:8000 tcp:8000
+```
 
-Command line: `./gradlew assembleDebug` builds the APK, `./gradlew testDebugUnitTest` runs the JVM unit tests, and `./gradlew connectedDebugAndroidTest` runs the database tests on a running emulator.
+Then set `portfoliox.marketDataSource=remote` in `gradle.properties` and run the app. API docs are at http://localhost:8000/docs. See [server/README.md](server/README.md) for details.
 
-## Using the FastAPI backend
+## Testing
 
-The app ships with a built-in market simulator, so it runs with no setup. To fetch market data over HTTP from the bundled FastAPI server instead:
-
-1. Start the server (see [server/README.md](server/README.md)): `.venv\Scripts\python -m uvicorn app.main:app --host 127.0.0.1 --port 8000`
-2. Forward the port to the emulator or phone: `adb reverse tcp:8000 tcp:8000`
-3. Set `portfoliox.marketDataSource=remote` in `gradle.properties` and run the app.
+| Command | What it runs |
+|---|---|
+| `./gradlew testDebugUnitTest` | JVM unit tests: domain rules, repositories with fakes, ViewModels with virtual time, JSON parsing, polling and backoff |
+| `./gradlew connectedDebugAndroidTest` | Room tests on a device: SQL, type converters, transaction rollback, reset |
+| `./gradlew lintDebug` | Android Lint |
+| `server\.venv\Scripts\python -m pytest server` | FastAPI endpoint tests |
