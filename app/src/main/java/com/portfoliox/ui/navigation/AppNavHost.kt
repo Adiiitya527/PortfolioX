@@ -35,7 +35,7 @@ fun AppNavHost(
             DashboardScreen()
         }
         composable<WatchlistRoute> {
-            WatchlistScreen(onSearchClick = { navController.navigate(SearchRoute) })
+            WatchlistScreen(onSearchClick = { navController.navigate(SearchRoute) }, onStockClick = openStock)
         }
         composable<HistoryRoute> {
             HistoryScreen()

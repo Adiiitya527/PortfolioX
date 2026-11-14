@@ -14,6 +14,21 @@
     <string name="error_network">Can\'t reach the market data service. Check your connection and try again.</string>
     <string name="error_stock_not_found">We couldn\'t find that stock.</string>
     <string name="action_retry">Try again</string>
+    <string name="action_undo">Undo</string>
+    <string name="action_remove">Remove</string>
+    <string name="action_clear">Clear</string>
+
+    <!-- Watchlist -->
+    <string name="watchlist_empty_title">Your watchlist is empty</string>
+    <string name="watchlist_empty_message">Search for stocks and tap the star to follow their prices here.</string>
+    <string name="watchlist_removed">Removed %1$s from your watchlist</string>
+    <string name="watchlist_add">Add to watchlist</string>
+    <string name="watchlist_remove">Remove from watchlist</string>
+
+    <!-- Search -->
+    <string name="search_hint">Symbol or company name</string>
+    <string name="search_no_results_title">No matches</string>
+    <string name="search_no_results_message">No stocks match \"%1$s\". Try a ticker like AAPL or a name like Tesla.</string>
 
     <!-- Portfolio -->
     <string name="portfolio_cash_available">Cash available</string>
@@ -21,8 +36,6 @@
 
     <!-- Placeholders until their phases -->
     <string name="placeholder_title">Coming soon</string>
-    <string name="watchlist_placeholder">The watchlist arrives in Phase 4. Use search to open a stock.</string>
-    <string name="search_placeholder">Search arrives in Phase 4. Tap a sample stock to try navigation.</string>
     <string name="stock_detail_placeholder">Price, chart and trading for %1$s arrive in Phases 5 and 6.</string>
     <string name="history_placeholder">Transaction history arrives in Phase 8.</string>
 </resources>
