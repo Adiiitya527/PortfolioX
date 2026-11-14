@@ -1,5 +1,6 @@
 package com.portfoliox.ui.stockdetail
 
+import androidx.lifecycle.SavedStateHandle
 import com.portfoliox.R
 import com.portfoliox.domain.model.ChartRange
 import com.portfoliox.domain.model.Holding
@@ -113,6 +114,20 @@ class StockDetailViewModelTest {
         assertEquals(ChartRange.YEAR, viewModel.chartState.value.range)
         assertEquals(UiState.Success(monthPoints.take(2)), viewModel.chartState.value.points)
         assertEquals(listOf(ChartRange.MONTH, ChartRange.YEAR), market.historyCalls)
+    }
+
+    @Test
+    fun `selected range is restored from saved state after process death`() = runTest {
+        market.history = mapOf(ChartRange.YEAR to monthPoints)
+        val savedState = SavedStateHandle()
+        val first = StockDetailViewModel("AAPL", market, watchlist, portfolio, savedState)
+        first.selectRange(ChartRange.YEAR)
+
+        // A new ViewModel built from the same saved state, as after Android recreates the process.
+        val restored = StockDetailViewModel("AAPL", market, watchlist, portfolio, savedState)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { restored.chartState.collect {} }
+
+        assertEquals(ChartRange.YEAR, restored.chartState.value.range)
     }
 
     @Test

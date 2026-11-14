@@ -1,5 +1,6 @@
 package com.portfoliox.ui.stockdetail
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -49,6 +50,8 @@ data class StockDetail(
  * doesn't hide the rest of the screen.
  *
  * @param symbol comes from the navigation route; see [Factory].
+ * @param savedStateHandle survives process death (it's saved into the Activity's saved
+ * instance state). A ViewModel alone only survives configuration changes such as rotation.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class StockDetailViewModel(
@@ -56,10 +59,13 @@ class StockDetailViewModel(
     private val marketRepository: MarketRepository,
     private val watchlistRepository: WatchlistRepository,
     private val portfolioRepository: PortfolioRepository,
+    private val savedStateHandle: SavedStateHandle = SavedStateHandle(),
 ) : ViewModel() {
 
     private val retryTrigger = MutableStateFlow(0)
-    private val selectedRange = MutableStateFlow(DEFAULT_RANGE)
+
+    /** The chosen chart range, restored if Android killed the app in the background. */
+    private val selectedRange: StateFlow<ChartRange> = savedStateHandle.getStateFlow(KEY_RANGE, DEFAULT_RANGE)
     private val chartRetryTrigger = MutableStateFlow(0)
 
     val uiState: StateFlow<UiState<StockDetail>> = retryTrigger
@@ -101,7 +107,7 @@ class StockDetailViewModel(
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ChartUiState(DEFAULT_RANGE, UiState.Loading))
 
     fun selectRange(range: ChartRange) {
-        selectedRange.value = range
+        savedStateHandle[KEY_RANGE] = range // enums are Serializable, so they can be saved
     }
 
     fun retry() {
@@ -121,6 +127,7 @@ class StockDetailViewModel(
 
     companion object {
         val DEFAULT_RANGE = ChartRange.MONTH
+        private const val KEY_RANGE = "chart_range"
 
         /**
          * createSavedStateHandle() gives the navigation arguments of this screen's back stack
@@ -130,12 +137,13 @@ class StockDetailViewModel(
          */
         val Factory = viewModelFactory {
             initializer {
-                val route = createSavedStateHandle().toRoute<StockDetailRoute>()
+                val savedStateHandle = createSavedStateHandle()
                 StockDetailViewModel(
-                    symbol = route.symbol,
+                    symbol = savedStateHandle.toRoute<StockDetailRoute>().symbol,
                     marketRepository = appContainer.marketRepository,
                     watchlistRepository = appContainer.watchlistRepository,
                     portfolioRepository = appContainer.portfolioRepository,
+                    savedStateHandle = savedStateHandle,
                 )
             }
         }
